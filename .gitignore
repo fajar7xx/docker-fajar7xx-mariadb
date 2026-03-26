@@ -1,0 +1,11 @@
+# Environment files
+.env
+
+# MariaDB data
+data/
+logs/
+backup/
+database-backup/
+
+# Config (jika ada sensitive data)
+config/*.cnf
