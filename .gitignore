@@ -1,5 +1,8 @@
-# Environment files
+# Environment files (credentials — never commit)
 .env
+.env.dev
+.env.staging
+.env.prod
 
 # MariaDB data
 data/
@@ -7,5 +10,11 @@ logs/
 backup/
 database-backup/
 
-# Config (jika ada sensitive data)
+# Config CNF (may contain sensitive tuning params)
 config/*.cnf
+
+# Initdb scripts (dev-only bootstrapping)
+scripts/initdb/
+
+# ai
+.commandcode/*

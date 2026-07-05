@@ -34,24 +34,24 @@ echo ""
 
 # Database list
 echo "Databases:"
-mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "SHOW DATABASES;" 2>/dev/null | grep -v "Database" | sed 's/^/  - /'
+MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -e "SHOW DATABASES;" 2>/dev/null | grep -v "Database" | sed 's/^/  - /'
 echo ""
 
 # Table count in current database
 echo "Tables in $MYSQL_DATABASE:"
-TABLE_COUNT=$(mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D "$MYSQL_DATABASE" -e "SHOW TABLES;" 2>/dev/null | grep -v "Tables_in_" | wc -l)
+TABLE_COUNT=$(MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -D "$MYSQL_DATABASE" -e "SHOW TABLES;" 2>/dev/null | grep -v "Tables_in_" | wc -l)
 echo "  Total tables: $TABLE_COUNT"
 echo ""
 
 if [ "$TABLE_COUNT" -gt 0 ]; then
     echo "  Tables:"
-    mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D "$MYSQL_DATABASE" -e "SHOW TABLES;" 2>/dev/null | grep -v "Tables_in_" | sed 's/^/    - /'
+    MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -D "$MYSQL_DATABASE" -e "SHOW TABLES;" 2>/dev/null | grep -v "Tables_in_" | sed 's/^/    - /'
     echo ""
 fi
 
 # Database size
 echo "Database Size:"
-mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "
+MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -e "
     SELECT
         table_schema AS 'Database',
         ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS 'Size (MB)'
@@ -63,7 +63,7 @@ echo ""
 
 # MariaDB version
 echo "MariaDB Version:"
-mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "SELECT VERSION();" 2>/dev/null | tail -n +2 | sed 's/^/  /'
+MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -e "SELECT VERSION();" 2>/dev/null | tail -n +2 | sed 's/^/  /'
 echo ""
 
 # Volume info

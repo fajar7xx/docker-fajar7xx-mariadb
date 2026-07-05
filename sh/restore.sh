@@ -56,10 +56,10 @@ echo "Restoring database..."
 # Check if file is gzipped
 case "$SQL_FILE" in
     *.gz)
-        gunzip -c "$SQL_FILE" | mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"
+        gunzip -c "$SQL_FILE" | MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" "$MYSQL_DATABASE"
         ;;
     *)
-        mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < "$SQL_FILE"
+        MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" "$MYSQL_DATABASE" < "$SQL_FILE"
         ;;
 esac
 

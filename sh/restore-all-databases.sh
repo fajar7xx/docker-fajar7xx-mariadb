@@ -63,7 +63,7 @@ for SQL_FILE in "$BACKUP_DIR"/*.sql "$BACKUP_DIR"/*.sql.gz; do
 
     # Create database if not exists
     echo "Creating database: $DB_NAME"
-    mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" \
+    MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" \
         -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>&1
 
     if [ $? -ne 0 ]; then
@@ -77,11 +77,11 @@ for SQL_FILE in "$BACKUP_DIR"/*.sql "$BACKUP_DIR"/*.sql.gz; do
     echo "Restoring data..."
     case "$SQL_FILE" in
         *.gz)
-            gunzip -c "$SQL_FILE" | mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$DB_NAME"
+            gunzip -c "$SQL_FILE" | MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" "$DB_NAME"
             RESTORE_RESULT=$?
             ;;
         *)
-            mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$DB_NAME" < "$SQL_FILE"
+            MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" "$DB_NAME" < "$SQL_FILE"
             RESTORE_RESULT=$?
             ;;
     esac
@@ -107,7 +107,7 @@ echo ""
 
 # Show all databases
 echo "All databases:"
-mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "SHOW DATABASES;" 2>/dev/null | grep -v "Database" | grep -v "information_schema" | grep -v "performance_schema" | sed 's/^/  - /'
+MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -e "SHOW DATABASES;" 2>/dev/null | grep -v "Database" | grep -v "information_schema" | grep -v "performance_schema" | sed 's/^/  - /'
 
 echo ""
 echo "Done!"

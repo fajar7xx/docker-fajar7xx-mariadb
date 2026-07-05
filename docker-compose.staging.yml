@@ -1,0 +1,61 @@
+services:
+  mariadb:
+    env_file:
+      - .env.staging
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - ./config/staging.cnf:/etc/mysql/conf.d/staging.cnf:ro
+    environment:
+      MYSQL_MAX_CONNECTIONS: 75
+      BINLOG_EXPIRE_DAYS: 7
+      SLOW_QUERY_TIME: 2
+      HEALTHCHECK_INTERVAL: 30s
+      HEALTHCHECK_TIMEOUT: 10s
+      HEALTHCHECK_RETRIES: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "2.0"
+        reservations:
+          memory: 256M
+          cpus: "0.5"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  backup:
+    image: fradelg/mysql-cron-backup:latest
+    container_name: mariadb-backup-staging
+    restart: unless-stopped
+    env_file:
+      - .env.staging
+    environment:
+      MYSQL_HOST: mariadb
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASS: ${MYSQL_PASSWORD}
+      MAX_BACKUPS: 14
+      CRON_SCHEDULE: "0 3 * * *"
+      BACKUP_DIR: /backup
+      INIT_BACKUP: "1"
+      INIT_RESTORE_LATEST: "0"
+    volumes:
+      - ./backup:/backup
+    networks:
+      - mariadb-network
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.5"

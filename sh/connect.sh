@@ -37,4 +37,4 @@ echo "================================================"
 echo ""
 
 # Connect to database
-mysql -h 127.0.0.1 -P 3306 -u "$USER" -p"$PASSWORD" "$MYSQL_DATABASE"
+MYSQL_PWD="$PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$USER" "$MYSQL_DATABASE"

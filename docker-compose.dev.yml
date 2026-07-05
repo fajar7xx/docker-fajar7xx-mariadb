@@ -1,0 +1,33 @@
+services:
+  mariadb:
+    env_file:
+      - .env.dev
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - ./config/dev.cnf:/etc/mysql/conf.d/dev.cnf:ro
+      - ./scripts/initdb:/docker-entrypoint-initdb.d:ro
+    environment:
+      MYSQL_MAX_CONNECTIONS: 50
+      BINLOG_EXPIRE_DAYS: 3
+      SLOW_QUERY_TIME: 1
+      HEALTHCHECK_INTERVAL: 10s
+      HEALTHCHECK_TIMEOUT: 5s
+      HEALTHCHECK_RETRIES: 5
+
+  adminer:
+    image: adminer:latest
+    container_name: mariadb-adminer
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - mariadb-network
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"

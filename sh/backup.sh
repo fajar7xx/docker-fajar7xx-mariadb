@@ -41,7 +41,7 @@ echo ""
 echo "Starting backup..."
 
 # Backup database
-mysqldump -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" \
+MYSQL_PWD="$MYSQL_PASSWORD" mysqldump -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" \
     --single-transaction \
     --routines \
     --triggers \

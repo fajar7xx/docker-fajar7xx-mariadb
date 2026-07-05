@@ -6,8 +6,7 @@
 # Load environment variables
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ENV_FILE="$SCRIPT_DIR/../.env"
-# BACKUP_DIR="$SCRIPT_DIR/../database-backup"
-BACKUP_DIR="$SCRIPT_DIR/../database-backup/valasmate"
+BACKUP_DIR="$SCRIPT_DIR/../database-backup"
 
 if [ ! -f "$ENV_FILE" ]; then
     echo "Error: .env file not found at $ENV_FILE"
@@ -86,10 +85,10 @@ echo "$SQL_FILES" | while read -r SQL_FILE; do
     # Check if file is gzipped
     case "$SQL_FILE" in
         *.gz)
-            gunzip -c "$SQL_FILE" | mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" 2>/dev/null
+            gunzip -c "$SQL_FILE" | MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" "$MYSQL_DATABASE" 2>/dev/null
             ;;
         *)
-            mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < "$SQL_FILE" 2>/dev/null
+            MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -P 3306 -u "$MYSQL_USER" "$MYSQL_DATABASE" < "$SQL_FILE" 2>/dev/null
             ;;
     esac
 

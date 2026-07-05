@@ -1,0 +1,91 @@
+services:
+  mariadb:
+    image: mariadb:lts
+    env_file:
+      - .env.prod
+    ports:
+      - "127.0.0.1:${MARIADB_PORT:-3306}:3306"
+    volumes:
+      - ./config/prod.cnf:/etc/mysql/conf.d/prod.cnf:ro
+    environment:
+      MYSQL_MAX_CONNECTIONS: ${MYSQL_MAX_CONNECTIONS:-150}
+      BINLOG_EXPIRE_DAYS: ${BINLOG_EXPIRE_DAYS:-14}
+      SLOW_QUERY_TIME: ${SLOW_QUERY_TIME:-2}
+      HEALTHCHECK_INTERVAL: ${HEALTHCHECK_INTERVAL:-30s}
+      HEALTHCHECK_TIMEOUT: ${HEALTHCHECK_TIMEOUT:-10s}
+      HEALTHCHECK_RETRIES: ${HEALTHCHECK_RETRIES:-5}
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    tmpfs:
+      - /tmp:exec,size=256M
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "4.0"
+        reservations:
+          memory: 1G
+          cpus: "1.0"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --bind-address=0.0.0.0
+      --max-connections=${MYSQL_MAX_CONNECTIONS:-150}
+      --log-bin=mysql-bin
+      --binlog-format=ROW
+      --expire-logs-days=${BINLOG_EXPIRE_DAYS:-14}
+      --sync-binlog=1
+      --innodb-flush-log-at-trx-commit=1
+      --slow-query-log=1
+      --slow-query-log-file=/var/log/mysql/slow.log
+      --long-query-time=${SLOW_QUERY_TIME:-2}
+      --innodb-buffer-pool-size=${INNODB_BUFFER_POOL:-1G}
+      --innodb-log-file-size=${INNODB_LOG_FILE_SIZE:-256M}
+      --max-allowed-packet=${MAX_ALLOWED_PACKET:-64M}
+
+  backup:
+    image: fradelg/mysql-cron-backup:latest
+    container_name: mariadb-backup-prod
+    restart: always
+    env_file:
+      - .env.prod
+    environment:
+      MYSQL_HOST: mariadb
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASS: ${MYSQL_PASSWORD}
+      MAX_BACKUPS: 30
+      CRON_SCHEDULE: "0 2 * * *"
+      BACKUP_DIR: /backup
+      INIT_BACKUP: "1"
+      INIT_RESTORE_LATEST: "0"
+    volumes:
+      - ./backup:/backup
+    networks:
+      - mariadb-network
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
