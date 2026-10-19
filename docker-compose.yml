@@ -1,7 +1,7 @@
 services:
   mariadb:
     image: mariadb:lts
-    container_name: mariadb-server
+    container_name: mariadb-server-fss
     restart: unless-stopped
     env_file:
       - .env
